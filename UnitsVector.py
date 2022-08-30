@@ -283,6 +283,19 @@ def test():
 
     print("I:", 0.5 * fI / mI * tI ** 2)
 
+    # Unitlessness Check
+    # As Prof Rashidi Always Says trig and exponential functions take unitless arguments
+    # invalid
+    try:
+        print(math.sin(Seconds(2*math.pi)))
+    except:
+        print("Arg wasn't unitless")
+
+    print(math.sin(2 * math.pi * Seconds(20) / Seconds(60)))
+
+
+
+
 
 
 
