@@ -2,7 +2,6 @@
 ### Inspired by https://youtu.be/bI-FS7aZJpY and a desire not to write bad code
 
 import numpy as np
-from Two_Dimensional_Fit.twoDimFit import rref, solve, invert
 import math
 
 mks_units = ["s", "m", "kg", "A", "K", "mol", "cd"]
@@ -25,9 +24,17 @@ class UnitsVector:
 
             else:
                 raise Exception("UnitsVector addition error: units do not match")
-        # Maybe I'll need to implement addition for unitless UnitsVectors and Numbers
+        elif isinstance(other, (int, float)):
+            if np.linalg.norm(self.vector) == 0:
+                out_val = self.value * self.value_scale + other
+                return UnitsVector(self.vector, out_val / self.value_scale, self.value_scale)
+            else:
+                raise Exception("UnitsVector addition error: cannot add something with Units to a number")
         else:
             raise Exception("UnitsVector addition error: other is not a UnitsVector")
+
+    def __radd__(self, other):
+        return self.__add__(other)
 
     def __sub__(self, other):
         if isinstance(other, UnitsVector):
@@ -39,6 +46,22 @@ class UnitsVector:
 
             else:
                 raise Exception("UnitsVector subtraction error: units do not match")
+        elif isinstance(other, (int, float)):
+            if np.linalg.norm(self.vector) == 0:
+                out_val = self.value * self.value_scale - other
+                return UnitsVector(self.vector, out_val / self.value_scale, self.value_scale)
+            else:
+                raise Exception("UnitsVector subtraction error: cannot subtract a number from something with Units")
+        else:
+            raise Exception("UnitsVector subtraction error: other is not a UnitsVector")
+
+    def __rsub__(self, other):
+        if isinstance(other, (int, float)):
+            if np.linalg.norm(self.vector) == 0:
+                out_val = other - self.value * self.value_scale
+                return UnitsVector(self.vector, out_val / self.value_scale, self.value_scale)
+            else:
+                raise Exception("UnitsVector subtraction error: cannot subtract something with Units from a number")
         else:
             raise Exception("UnitsVector subtraction error: other is not a UnitsVector")
 
@@ -102,11 +125,22 @@ class UnitsVector:
         else:
             raise Exception("UnitsVector power error: base is not a number")
 
-
-
     # I plan on printing in mks unless explicitly casted to another unit system
-    def __str__(self):
+    def __repr__(self):
         out_str = str(self.value * self.value_scale)
+        out_str += " ("
+        spaces = False
+        for i in range(len(self.vector)):
+            if self.vector[i] != 0:
+                if spaces:
+                    out_str += " "
+                out_str += mks_units[i] + "^" + str(self.vector[i])
+                spaces = True
+        out_str += ")"
+        return out_str
+
+    def __str__(self):
+        out_str = "{:.5f}".format(self.value * self.value_scale)
         out_str += " ("
         spaces = False
         for i in range(len(self.vector)):
@@ -250,8 +284,29 @@ class PoundsForce(Newtons):
     def __init__(self, f):
         super().__init__(f / 4.4482216152605)
 
+class MetersPerSecond(MKS):
+    def __init__(self, v):
+        super().__init__(v, -1, 1, 0, 0, 0, 0, 0)
 
+class KilometersPerHour(MetersPerSecond):
+    def __init__(self, v):
+        super().__init__(v / 3.6)
 
+class MilesPerHour(KilometersPerHour):
+    def __init__(self, v):
+        super().__init__(v * 1.60934)
+
+class Radians(MKS):
+    def __init__(self, t):
+        super().__init__(t, 0, 0, 0, 0, 0, 0, 0)
+
+class Degrees(Radians):
+    def __init__(self, t):
+        super().__init__(t * math.pi / 180)
+
+class MetersPerSecondSquared(MKS):
+    def __init__(self, a):
+        super().__init__(a, -2, 1, 0, 0, 0, 0, 0)
 
 
 def test():
