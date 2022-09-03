@@ -171,6 +171,12 @@ class UnitsVector:
 
         return self.__value__() >= other
 
+    def __abs__(self):
+        if self < 0:
+            return self * -1
+        else:
+            return self
+
     def sqrt(self):
         return UnitsVector(self.vector / 2, math.sqrt(self.value), math.sqrt(self.value_scale))
 
