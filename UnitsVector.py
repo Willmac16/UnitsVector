@@ -14,6 +14,17 @@ class UnitsVector:
         self.vector = vec
         self.value_scale = val_scale
 
+    def __units__(self):
+        out = ""
+        for i in range(len(self.vector)):
+            if self.vector[i] != 0:
+                out += mks_units[i] + "^" + str(self.vector[i]) + " "
+
+        return out
+
+    def __neg__(self):
+        return UnitsVector(self.vector, -self.value, self.value_scale)
+
     def __add__(self, other):
         if isinstance(other, UnitsVector):
             if np.equal(self.vector, other.vector).all():
@@ -21,9 +32,8 @@ class UnitsVector:
                 relative_val = abs_value / self.value_scale
 
                 return UnitsVector(self.vector, relative_val, self.value_scale)
-
             else:
-                raise Exception("UnitsVector addition error: units do not match")
+                raise Exception("UnitsVector addition error: units do not match ({} | {})".format(self.__units__(), other.__units__()))
         elif isinstance(other, (int, float)):
             if np.linalg.norm(self.vector) == 0:
                 out_val = self.value * self.value_scale + other
@@ -45,7 +55,7 @@ class UnitsVector:
                 return UnitsVector(self.vector, relative_val, self.value_scale)
 
             else:
-                raise Exception("UnitsVector subtraction error: units do not match")
+                raise Exception("UnitsVector subtraction error: units do not match ({} | {})".format(self.__units__(), other.__units__()))
         elif isinstance(other, (int, float)):
             if np.linalg.norm(self.vector) == 0:
                 out_val = self.value * self.value_scale - other
@@ -103,7 +113,7 @@ class UnitsVector:
 
     # I don't feel like dealing with the ternary form with modulo
     def __pow__(self, power):
-        if isinstance(power, (int, float)):
+        if isinstance(power, (int, float, np.int32, np.int64, np.float32, np.float64, np.float16)):
             out_val = self.value ** power
             return UnitsVector(self.vector * power, out_val, self.value_scale ** power)
         elif isinstance(power, UnitsVector):
@@ -113,6 +123,7 @@ class UnitsVector:
             else:
                 raise Exception("UnitsVector power error: power must be unitless")
         else:
+            print(type(power))
             raise Exception("UnitsVector power error: power is not a number")
 
     def __rpow__(self, base):
@@ -124,6 +135,44 @@ class UnitsVector:
                 raise Exception("UnitsVector power error: power must be unitless")
         else:
             raise Exception("UnitsVector power error: base is not a number")
+
+    def __value__(self):
+        return self.value * self.value_scale
+
+    def __lt__(self, other):
+        if isinstance(other, UnitsVector):
+            other = other.__value__()
+        elif not isinstance(other, (int, float)):
+            raise Exception("UnitsVector comparison error: other is not a UnitsVector or a number")
+
+        return self.__value__() < other
+
+    def __le__(self, other):
+        if isinstance(other, UnitsVector):
+            other = other.__value__()
+        elif not isinstance(other, (int, float)):
+            raise Exception("UnitsVector comparison error: other is not a UnitsVector or a number")
+
+        return self.__value__() <= other
+
+    def __gt__(self, other):
+        if isinstance(other, UnitsVector):
+            other = other.__value__()
+        elif not isinstance(other, (int, float)):
+            raise Exception("UnitsVector comparison error: other is not a UnitsVector or a number")
+
+        return self.__value__() > other
+
+    def __ge__(self, other):
+        if isinstance(other, UnitsVector):
+            other = other.__value__()
+        elif not isinstance(other, (int, float)):
+            raise Exception("UnitsVector comparison error: other is not a UnitsVector or a number")
+
+        return self.__value__() >= other
+
+    def sqrt(self):
+        return UnitsVector(self.vector / 2, math.sqrt(self.value), math.sqrt(self.value_scale))
 
     # I plan on printing in mks unless explicitly casted to another unit system
     def __repr__(self):
