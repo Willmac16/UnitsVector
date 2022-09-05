@@ -248,6 +248,10 @@ class Millimeters(Meters):
     def __init__(self, x):
         super().__init__(x/1000.0)
 
+class Kilometers(Meters):
+    def __init__(self, x):
+        super().__init__(x*1000.0)
+
 class Inches(Meters):
     def __init__(self, x):
         super().__init__(x * 0.0254)
@@ -290,7 +294,17 @@ class MetersPerSecond(MKS):
 
 class KilometersPerHour(MetersPerSecond):
     def __init__(self, v):
-        super().__init__(v / 3.6)
+        if isinstance(v, MKS):
+            vel_vec = np.array([-1, 1, 0, 0, 0, 0, 0])
+            if v.vector == vel_vec:
+                super().super().super().__init__(vel_vec, v.value * 3.6, 1 / 3.6)
+            else:
+                raise Exception("UnitsVector error: cannot convert disimilar units")
+        else:
+            super().__init__(v / 3.6)
+
+    def __str__(self):
+        return str(self.value) + " km/h"
 
 class MilesPerHour(KilometersPerHour):
     def __init__(self, v):
