@@ -384,6 +384,10 @@ class MetersPerSecondSquared(MKS):
     def __init__(self, a):
         super().__init__(a, -2, 1, 0, 0, 0, 0, 0)
 
+class Watts(MKS):
+    def __init__(self, p):
+        super().__init__(p, -3, 1, 1, 0, 0, 0, 0)
+
 
 def test():
     print("Units testing")
