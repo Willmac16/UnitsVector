@@ -299,6 +299,10 @@ class Meters(MKS):
     def __init__(self, x):
         super().__init__(x, 0, 1, 0, 0, 0, 0, 0)
 
+class Centimeters(Meters):
+    def __init__(self, x):
+        super().__init__(x/100.0)
+
 class Millimeters(Meters):
     def __init__(self, x):
         super().__init__(x/1000.0)
