@@ -1,6 +1,9 @@
 ### Will MacCormack 2022
 ### Inspired by https://youtu.be/bI-FS7aZJpY and a desire not to write bad code
 
+
+# TODO: Switch from dumb units conversion to "extract basis"
+# Store alternatives in terms of a units vector and a scale vector of MKS
 import numpy as np
 import math
 
@@ -39,7 +42,7 @@ class UnitsVector:
                 out_val = self.value * self.value_scale + other
                 return UnitsVector(self.vector, out_val / self.value_scale, self.value_scale)
             else:
-                raise Exception("UnitsVector addition error: cannot add something with Units to a number")
+                raise Exception("UnitsVector addition error: cannot add something with Units to a number ({})".format(self.__units__()))
         else:
             raise Exception("UnitsVector addition error: other is not a UnitsVector")
 
@@ -213,6 +216,8 @@ class UnitsVector:
         else:
             raise Exception("UnitsVector float error: cannot convert to float if not unitless")
 
+    def __format__(self, spec):
+        return f'{self.__value__():{spec}}'  + " ( " + self.__units__() + ")"
 
 
 class MKS(UnitsVector):
@@ -307,6 +312,10 @@ class Millimeters(Meters):
     def __init__(self, x):
         super().__init__(x/1000.0)
 
+class Kilometers(Meters):
+    def __init__(self, x):
+        super().__init__(x*1000.0)
+
 class Inches(Meters):
     def __init__(self, x):
         super().__init__(x * 0.0254)
@@ -346,6 +355,14 @@ class PoundsForce(Newtons):
 class MetersPerSecond(MKS):
     def __init__(self, v):
         super().__init__(v, -1, 1, 0, 0, 0, 0, 0)
+
+def kilometersPerHour(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-1, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale * 3.6
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
 
 class KilometersPerHour(MetersPerSecond):
     def __init__(self, v):
