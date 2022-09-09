@@ -214,7 +214,7 @@ class UnitsVector:
         if np.linalg.norm(self.vector) == 0:
             return self.value * self.value_scale
         else:
-            raise Exception("UnitsVector float error: cannot convert to float if not unitless")
+            raise Exception("UnitsVector float error: cannot convert to float if not unitless ({})".format(self.__units__()))
 
     def __format__(self, spec):
         return f'{self.__value__():{spec}}'  + " ( " + self.__units__() + ")"
@@ -222,6 +222,9 @@ class UnitsVector:
 
 class MKS(UnitsVector):
     def __init__(self, value, s, m, kg, A, k, mol, cd):
+        if isinstance(value, UnitsVector):
+            value = value.__value__()
+
         self.value = value
         self.value_scale = 1
 
