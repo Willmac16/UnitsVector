@@ -389,7 +389,15 @@ class MetersPerSecondSquared(MKS):
 
 class Watts(MKS):
     def __init__(self, p):
-        super().__init__(p, -3, 1, 1, 0, 0, 0, 0)
+        super().__init__(p, -3, 2, 1, 0, 0, 0, 0)
+
+class Joules(MKS):
+    def __init__(self, e):
+        super().__init__(e, -2, 2, 1, 0, 0, 0, 0)
+
+class ElectronVolts(Joules):
+    def __init__(self, e):
+        super().__init__(e * 1.602176634e-19)
 
 
 def test():
