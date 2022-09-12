@@ -214,7 +214,7 @@ class UnitsVector:
         if np.linalg.norm(self.vector) == 0:
             return self.value * self.value_scale
         else:
-            raise Exception("UnitsVector float error: cannot convert to float if not unitless")
+            raise Exception("UnitsVector float error: cannot convert to float if not unitless ({})".format(self.__units__()))
 
     def __format__(self, spec):
         return f'{self.__value__():{spec}}'  + " ( " + self.__units__() + ")"
@@ -222,6 +222,9 @@ class UnitsVector:
 
 class MKS(UnitsVector):
     def __init__(self, value, s, m, kg, A, k, mol, cd):
+        if isinstance(value, UnitsVector):
+            value = value.__value__()
+
         self.value = value
         self.value_scale = 1
 
@@ -303,6 +306,10 @@ class Seconds(MKS):
 class Meters(MKS):
     def __init__(self, x):
         super().__init__(x, 0, 1, 0, 0, 0, 0, 0)
+
+class Centimeters(Meters):
+    def __init__(self, x):
+        super().__init__(x/100.0)
 
 class Millimeters(Meters):
     def __init__(self, x):
@@ -400,6 +407,18 @@ class Degrees(Radians):
 class MetersPerSecondSquared(MKS):
     def __init__(self, a):
         super().__init__(a, -2, 1, 0, 0, 0, 0, 0)
+
+class Watts(MKS):
+    def __init__(self, p):
+        super().__init__(p, -3, 2, 1, 0, 0, 0, 0)
+
+class Joules(MKS):
+    def __init__(self, e):
+        super().__init__(e, -2, 2, 1, 0, 0, 0, 0)
+
+class ElectronVolts(Joules):
+    def __init__(self, e):
+        super().__init__(e * 1.602176634e-19)
 
 
 def test():
