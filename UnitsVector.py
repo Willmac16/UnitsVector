@@ -320,6 +320,10 @@ class Feet(Inches):
     def __init_(self, x):
         super().__init__(x * 12.0)
 
+class Yards(Feet):
+    def __init__(self, x):
+        super().__init__(x * 3.0)
+
 class Kilograms(MKS):
     def __init__(self, m):
         super().__init__(m, 0, 0, 1, 0, 0, 0, 0)
@@ -368,9 +372,26 @@ class MilesPerHour(KilometersPerHour):
     def __init__(self, v):
         super().__init__(v * 1.60934)
 
+class FeetPerSecond(MetersPerSecond):
+    def __init__(self, v):
+        super().__init__(v * 0.3048)
+
+class InchesPerSecond(FeetPerSecond):
+    def __init__(self, v):
+        super().__init__(v / 12.0)
+
 class Radians(MKS):
     def __init__(self, t):
         super().__init__(t, 0, 0, 0, 0, 0, 0, 0)
+
+def degrees(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([0, 0, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale * 180 / math.pi
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
 
 class Degrees(Radians):
     def __init__(self, t):
