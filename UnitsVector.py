@@ -88,6 +88,9 @@ class UnitsVector:
         elif isinstance(other, (int, float)):
             out_val = self.value * other
             return UnitsVector(self.vector, out_val, self.value_scale)
+
+        elif isinstance(other, np.ndarray):
+            return other * self
         else:
             raise Exception("UnitsVector multiplication error: other is not a UnitsVector or a number")
 
@@ -219,6 +222,12 @@ class UnitsVector:
     def __format__(self, spec):
         return f'{self.__value__():{spec}}'  + " ( " + self.__units__() + ")"
 
+    def __zero__(self):
+        return UnitsVector(self.vector, 0.0, self.value_scale)
+
+    def __one__(self):
+        return UnitsVector(self.vector, 1.0, self.value_scale)
+
 
 class MKS(UnitsVector):
     def __init__(self, value, s, m, kg, A, k, mol, cd):
@@ -347,6 +356,10 @@ class Omega(MKS):
     def __init__(self, w):
         super().__init__(w, -1, 0, 0, 0, 0, 0, 0)
 
+class Alpha(MKS):
+    def __init__(self, a):
+        super().__init__(a, -2, 0, 0, 0, 0, 0, 0)
+
 class RPM(Omega):
     def __init__(self, w):
         super().__init__(w * 2 * math.pi / 60)
@@ -383,6 +396,14 @@ class FeetPerSecond(MetersPerSecond):
     def __init__(self, v):
         super().__init__(v * 0.3048)
 
+def feetPerSecond(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-1, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale / 0.3048
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
 class InchesPerSecond(FeetPerSecond):
     def __init__(self, v):
         super().__init__(v / 12.0)
@@ -407,6 +428,18 @@ class Degrees(Radians):
 class MetersPerSecondSquared(MKS):
     def __init__(self, a):
         super().__init__(a, -2, 1, 0, 0, 0, 0, 0)
+
+class FeetPerSecondSquared(MetersPerSecondSquared):
+    def __init__(self, a):
+        super().__init__(a * 0.3048)
+
+def feetPerSecondSquared(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-2, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale / 0.3048
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
 
 class Watts(MKS):
     def __init__(self, p):
