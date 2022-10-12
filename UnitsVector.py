@@ -9,11 +9,21 @@ import math
 
 mks_units = ["s", "m", "kg", "A", "K", "mol", "cd"]
 
+INT_THRESHOLD = 1e-9
+
+# takes a float and returns it as a string, but will return as int if close enough
+def intify(num):
+    if abs(num - round(num)) < INT_THRESHOLD:
+        return str(int(round(num)))
+    else:
+        return str(num)
+
 
 # Widest Class: should be broader than MKS/SI units
 class UnitsVector:
     def __init__(self, vec, val, val_scale):
         self.value = val
+        # TODO: Switch to rational numbers for the exponent
         self.vector = vec
         self.value_scale = val_scale
 
@@ -21,7 +31,7 @@ class UnitsVector:
         out = ""
         for i in range(len(self.vector)):
             if self.vector[i] != 0:
-                out += mks_units[i] + "^" + str(self.vector[i]) + " "
+                out += mks_units[i] + "^" + intify(self.vector[i]) + " "
 
         return out
 
@@ -368,6 +378,10 @@ class Newtons(MKS):
     def __init__(self, f):
         super().__init__(f, -2, 1, 1, 0, 0, 0, 0)
 
+class NewtonsPerMeter(MKS):
+    def __init__(self, f):
+        super().__init__(f, -2, 0, 1, 0, 0, 0, 0)
+
 class PoundsForce(Newtons):
     def __init__(self, f):
         super().__init__(f / 4.4482216152605)
@@ -408,6 +422,14 @@ class InchesPerSecond(FeetPerSecond):
     def __init__(self, v):
         super().__init__(v / 12.0)
 
+def inchesPerSecond(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-1, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale / 0.3048 * 12.0
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
 class Radians(MKS):
     def __init__(self, t):
         super().__init__(t, 0, 0, 0, 0, 0, 0, 0)
@@ -438,6 +460,14 @@ def feetPerSecondSquared(v):
         vel_vec = np.array([-2, 1, 0, 0, 0, 0, 0])
         if (v.vector == vel_vec).all():
             return v.value * v.value_scale / 0.3048
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
+def inchesPerSecondSquared(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-2, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale / 0.3048 * 12.0
         else:
             raise Exception("UnitsVector error: cannot convert disimilar units")
 
