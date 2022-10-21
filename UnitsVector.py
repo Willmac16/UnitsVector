@@ -18,6 +18,17 @@ def intify(num):
     else:
         return str(num)
 
+def sum(vals):
+    out = vals[0].__zero__()
+    for val in vals:
+        out += val
+    return out
+
+def product(vals):
+    out = vals[0].__one__()
+    for val in vals:
+        out *= val
+    return out
 
 # Widest Class: should be broader than MKS/SI units
 class UnitsVector:
@@ -384,7 +395,16 @@ class NewtonsPerMeter(MKS):
 
 class PoundsForce(Newtons):
     def __init__(self, f):
-        super().__init__(f / 4.4482216152605)
+        super().__init__(f * 4.4482216152605)
+
+def poundsForce(x):
+    if isinstance(x, UnitsVector):
+        force_vec = np.array([-2, 1, 1, 0, 0, 0, 0])
+        if (x.vector == force_vec).all():
+            return x.value * x.value_scale / 4.4482216152605
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
 
 class MetersPerSecond(MKS):
     def __init__(self, v):
@@ -405,6 +425,14 @@ class KilometersPerHour(MetersPerSecond):
 class MilesPerHour(KilometersPerHour):
     def __init__(self, v):
         super().__init__(v * 1.60934)
+
+def milesPerHour(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-1, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale * 2.23693629
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
 
 class FeetPerSecond(MetersPerSecond):
     def __init__(self, v):
@@ -524,7 +552,7 @@ def test():
     print(math.sin(2 * math.pi * Seconds(20) / Seconds(60)))
 
 
-
+g = MetersPerSecondSquared(9.81)
 
 
 
