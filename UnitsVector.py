@@ -155,7 +155,7 @@ class UnitsVector:
 
     def __rpow__(self, base):
         if isinstance(base, (int, float)):
-            if np.linalg.nomr(self.vector) == 0:
+            if np.linalg.norm(self.vector) == 0:
                 out_val = base ** (self.value * self.value_scale)
                 return UnitsVector(np.zeros(7), out_val, 1)
             else:
@@ -354,7 +354,7 @@ class Inches(Meters):
         super().__init__(x * 0.0254)
 
 class Feet(Inches):
-    def __init_(self, x):
+    def __init__(self, x):
         super().__init__(x * 12.0)
 
 class Yards(Feet):
@@ -513,43 +513,49 @@ class ElectronVolts(Joules):
 
 
 def test():
-    print("Units testing")
+    print("Feet Testing")
+    print("============")
+    print("1 foot = {:.5f}".format(Feet(1)))
+    print("12 inches = {:.5f}".format(Inches(12)))
+    print("1/3 yard = {:.5f}".format(Yards(1/3)))
 
-    ## Solve for how far a mass goes in 10s under constant force
+    # print("Units testing")
 
-    mass_pounds = 240.0
-    force_pounds = 100.0
-    time = 10.0
+    # ## Solve for how far a mass goes in 10s under constant force
 
-    # Basic Float Sanity Check
-    mass_kilograms = mass_pounds * pound_mass_to_kilograms
-    force_newtons = force_pounds / 4.4482216152605
+    # mass_pounds = 240.0
+    # force_pounds = 100.0
+    # time = 10.0
 
-    print("F:", 0.5 * force_newtons / mass_kilograms * time ** 2)
+    # # Basic Float Sanity Check
+    # mass_kilograms = mass_pounds * pound_mass_to_kilograms
+    # force_newtons = force_pounds / 4.4482216152605
 
-    # Pure Metric Sanity Check
-    m = Kilograms(mass_kilograms)
-    f = Newtons(force_newtons)
-    t = Seconds(time)
+    # print("F:", 0.5 * force_newtons / mass_kilograms * time ** 2)
 
-    print("MKS:", 0.5 * f / m * t ** 2)
+    # # Pure Metric Sanity Check
+    # m = Kilograms(mass_kilograms)
+    # f = Newtons(force_newtons)
+    # t = Seconds(time)
 
-    # Imperial Sanity Check
-    mI = Pounds(mass_pounds)
-    fI = PoundsForce(force_pounds)
-    tI = Seconds(time)
+    # print("MKS:", 0.5 * f / m * t ** 2)
 
-    print("I:", 0.5 * fI / mI * tI ** 2)
+    # # Imperial Sanity Check
+    # mI = Pounds(mass_pounds)
+    # fI = PoundsForce(force_pounds)
+    # tI = Seconds(time)
 
-    # Unitlessness Check
-    # As Prof Rashidi Always Says trig and exponential functions take unitless arguments
-    # invalid
-    try:
-        print(math.sin(Seconds(2*math.pi)))
-    except:
-        print("Arg wasn't unitless")
+    # print("I:", 0.5 * fI / mI * tI ** 2)
 
-    print(math.sin(2 * math.pi * Seconds(20) / Seconds(60)))
+    # # Unitlessness Check
+    # # As Prof Rashidi Always Says trig and exponential functions take unitless arguments
+    # # invalid
+    # try:
+    #     print(math.sin(Seconds(2*math.pi)))
+    # except:
+    #     print("Arg wasn't unitless")
+
+    # print(math.sin(2 * math.pi * Seconds(20) / Seconds(60)))
 
 
 g = MetersPerSecondSquared(9.81)
