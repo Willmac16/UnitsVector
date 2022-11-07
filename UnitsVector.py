@@ -373,6 +373,10 @@ class Pounds(Kilograms):
     def __init__(self, m):
         super().__init__(m * pound_mass_to_kilograms)
 
+class Ounces(Pounds):
+    def __init__(self, m):
+        super().__init__(m/16.0)
+
 class Omega(MKS):
     def __init__(self, w):
         super().__init__(w, -1, 0, 0, 0, 0, 0, 0)
