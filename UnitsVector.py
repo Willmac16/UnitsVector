@@ -9,11 +9,32 @@ import math
 
 mks_units = ["s", "m", "kg", "A", "K", "mol", "cd"]
 
+INT_THRESHOLD = 1e-9
+
+# takes a float and returns it as a string, but will return as int if close enough
+def intify(num):
+    if abs(num - round(num)) < INT_THRESHOLD:
+        return str(int(round(num)))
+    else:
+        return str(num)
+
+def sum(vals):
+    out = vals[0].__zero__()
+    for val in vals:
+        out += val
+    return out
+
+def product(vals):
+    out = vals[0].__one__()
+    for val in vals:
+        out *= val
+    return out
 
 # Widest Class: should be broader than MKS/SI units
 class UnitsVector:
     def __init__(self, vec, val, val_scale):
         self.value = val
+        # TODO: Switch to rational numbers for the exponent
         self.vector = vec
         self.value_scale = val_scale
 
@@ -21,7 +42,7 @@ class UnitsVector:
         out = ""
         for i in range(len(self.vector)):
             if self.vector[i] != 0:
-                out += mks_units[i] + "^" + str(self.vector[i]) + " "
+                out += mks_units[i] + "^" + intify(self.vector[i]) + " "
 
         return out
 
@@ -134,7 +155,7 @@ class UnitsVector:
 
     def __rpow__(self, base):
         if isinstance(base, (int, float)):
-            if np.linalg.nomr(self.vector) == 0:
+            if np.linalg.norm(self.vector) == 0:
                 out_val = base ** (self.value * self.value_scale)
                 return UnitsVector(np.zeros(7), out_val, 1)
             else:
@@ -361,7 +382,7 @@ class Inches(Meters):
         super().__init__(x * 0.0254)
 
 class Feet(Inches):
-    def __init_(self, x):
+    def __init__(self, x):
         super().__init__(x * 12.0)
 
 class Yards(Feet):
@@ -380,6 +401,10 @@ class Pounds(Kilograms):
     def __init__(self, m):
         super().__init__(m * pound_mass_to_kilograms)
 
+class Ounces(Pounds):
+    def __init__(self, m):
+        super().__init__(m/16.0)
+
 class Omega(MKS):
     def __init__(self, w):
         super().__init__(w, -1, 0, 0, 0, 0, 0, 0)
@@ -396,9 +421,22 @@ class Newtons(MKS):
     def __init__(self, f):
         super().__init__(f, -2, 1, 1, 0, 0, 0, 0)
 
+class NewtonsPerMeter(MKS):
+    def __init__(self, f):
+        super().__init__(f, -2, 0, 1, 0, 0, 0, 0)
+
 class PoundsForce(Newtons):
     def __init__(self, f):
-        super().__init__(f / 4.4482216152605)
+        super().__init__(f * 4.4482216152605)
+
+def poundsForce(x):
+    if isinstance(x, UnitsVector):
+        force_vec = np.array([-2, 1, 1, 0, 0, 0, 0])
+        if (x.vector == force_vec).all():
+            return x.value * x.value_scale / 4.4482216152605
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
 
 class MetersPerSecond(MKS):
     def __init__(self, v):
@@ -420,6 +458,14 @@ class MilesPerHour(KilometersPerHour):
     def __init__(self, v):
         super().__init__(v * 1.60934)
 
+def milesPerHour(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-1, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale * 2.23693629
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
 class FeetPerSecond(MetersPerSecond):
     def __init__(self, v):
         super().__init__(v * 0.3048)
@@ -435,6 +481,14 @@ def feetPerSecond(v):
 class InchesPerSecond(FeetPerSecond):
     def __init__(self, v):
         super().__init__(v / 12.0)
+
+def inchesPerSecond(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-1, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale / 0.3048 * 12.0
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
 
 class Radians(MKS):
     def __init__(self, t):
@@ -469,6 +523,14 @@ def feetPerSecondSquared(v):
         else:
             raise Exception("UnitsVector error: cannot convert disimilar units")
 
+def inchesPerSecondSquared(v):
+    if isinstance(v, UnitsVector):
+        vel_vec = np.array([-2, 1, 0, 0, 0, 0, 0])
+        if (v.vector == vel_vec).all():
+            return v.value * v.value_scale / 0.3048 * 12.0
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
 class Watts(MKS):
     def __init__(self, p):
         super().__init__(p, -3, 2, 1, 0, 0, 0, 0)
@@ -483,46 +545,52 @@ class ElectronVolts(Joules):
 
 
 def test():
-    print("Units testing")
+    print("Feet Testing")
+    print("============")
+    print("1 foot = {:.5f}".format(Feet(1)))
+    print("12 inches = {:.5f}".format(Inches(12)))
+    print("1/3 yard = {:.5f}".format(Yards(1/3)))
 
-    ## Solve for how far a mass goes in 10s under constant force
+    # print("Units testing")
 
-    mass_pounds = 240.0
-    force_pounds = 100.0
-    time = 10.0
+    # ## Solve for how far a mass goes in 10s under constant force
 
-    # Basic Float Sanity Check
-    mass_kilograms = mass_pounds * pound_mass_to_kilograms
-    force_newtons = force_pounds / 4.4482216152605
+    # mass_pounds = 240.0
+    # force_pounds = 100.0
+    # time = 10.0
 
-    print("F:", 0.5 * force_newtons / mass_kilograms * time ** 2)
+    # # Basic Float Sanity Check
+    # mass_kilograms = mass_pounds * pound_mass_to_kilograms
+    # force_newtons = force_pounds / 4.4482216152605
 
-    # Pure Metric Sanity Check
-    m = Kilograms(mass_kilograms)
-    f = Newtons(force_newtons)
-    t = Seconds(time)
+    # print("F:", 0.5 * force_newtons / mass_kilograms * time ** 2)
 
-    print("MKS:", 0.5 * f / m * t ** 2)
+    # # Pure Metric Sanity Check
+    # m = Kilograms(mass_kilograms)
+    # f = Newtons(force_newtons)
+    # t = Seconds(time)
 
-    # Imperial Sanity Check
-    mI = Pounds(mass_pounds)
-    fI = PoundsForce(force_pounds)
-    tI = Seconds(time)
+    # print("MKS:", 0.5 * f / m * t ** 2)
 
-    print("I:", 0.5 * fI / mI * tI ** 2)
+    # # Imperial Sanity Check
+    # mI = Pounds(mass_pounds)
+    # fI = PoundsForce(force_pounds)
+    # tI = Seconds(time)
 
-    # Unitlessness Check
-    # As Prof Rashidi Always Says trig and exponential functions take unitless arguments
-    # invalid
-    try:
-        print(math.sin(Seconds(2*math.pi)))
-    except:
-        print("Arg wasn't unitless")
+    # print("I:", 0.5 * fI / mI * tI ** 2)
 
-    print(math.sin(2 * math.pi * Seconds(20) / Seconds(60)))
+    # # Unitlessness Check
+    # # As Prof Rashidi Always Says trig and exponential functions take unitless arguments
+    # # invalid
+    # try:
+    #     print(math.sin(Seconds(2*math.pi)))
+    # except:
+    #     print("Arg wasn't unitless")
+
+    # print(math.sin(2 * math.pi * Seconds(20) / Seconds(60)))
 
 
-
+g = MetersPerSecondSquared(9.81)
 
 
 
