@@ -312,6 +312,34 @@ class Seconds(MKS):
     def __init__(self, t):
         super().__init__(t, 1, 0, 0, 0, 0, 0, 0)
 
+class Minutes(Seconds):
+    def __init__(self, t):
+        super().__init__(t * 60)
+
+class Hours(Minutes):
+    def __init__(self, t):
+        super().__init__(t * 60)
+
+class Days(Hours):
+    def __init__(self, t):
+        super().__init__(t * 24)
+
+class Kelvin(MKS):
+    def __init__(self, k):
+        super().__init__(k, 0, 0, 0, 0, 1, 0, 0)
+
+class Celsius(Kelvin):
+    def __init__(self, c):
+        super().__init__(c + 273.15)
+
+def celcius(t):
+    if isinstance(t, UnitsVector):
+        temp_vec = np.array([0, 0, 0, 0, 1, 0, 0])
+        if (t.vector == temp_vec).all():
+            return t.value * t.value_scale - 273.15
+        else:
+            raise Exception("UnitsVector error: cannot convert disimilar units")
+
 class Meters(MKS):
     def __init__(self, x):
         super().__init__(x, 0, 1, 0, 0, 0, 0, 0)
