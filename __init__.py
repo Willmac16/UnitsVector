@@ -543,6 +543,10 @@ class ElectronVolts(Joules):
     def __init__(self, e):
         super().__init__(e * 1.602176634e-19)
 
+class Volts(MKS):
+    def __init__(self, v):
+        super().__init__(v, -3, 2, 1, -1, 0, 0, 0)
+
 
 def test():
     print("Feet Testing")
