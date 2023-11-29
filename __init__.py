@@ -547,6 +547,9 @@ class Volts(MKS):
     def __init__(self, v):
         super().__init__(v, -3, 2, 1, -1, 0, 0, 0)
 
+class Amps(MKS):
+    def __init__(self, a):
+        super().__init__(a, 0, 0, 0, 1, 0, 0, 0)
 
 def test():
     print("Feet Testing")
