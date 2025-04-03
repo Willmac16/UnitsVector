@@ -1,0 +1,27 @@
+[project]
+name = "units_vector"
+version = "0.0.1"
+authors = [
+  { name="Will MacCormack", email="me@willmac.xyz" },
+]
+description = "Automatic SI Unit Agreement Checking"
+readme = "README.md"
+requires-python = ">=3.1"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+  "numpy",
+]
+
+[project.urls]
+Homepage = "https://github.com/Willmac16/UnitsVector"
+Issues = "https://github.com/Willmac16/UnitsVector/issues"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
