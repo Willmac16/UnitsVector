@@ -51,17 +51,25 @@ class UnitsVector:
 
     def __add__(self, other):
         if isinstance(other, UnitsVector):
-            if np.equal(self.vector, other.vector).all():
+            if isinstance(other, Doppelganger):
+                return self
+            if np.equal(self.vector, other.vector).all() :
                 abs_value = self.value * self.value_scale + other.value * other.value_scale
                 relative_val = abs_value / self.value_scale
 
                 return UnitsVector(self.vector, relative_val, self.value_scale)
+            elif self.value == 0:
+                return other
+            elif other.value == 0:
+                return self
             else:
                 raise Exception("UnitsVector addition error: units do not match ({} | {})".format(self.__units__(), other.__units__()))
         elif isinstance(other, (int, float)):
             if np.linalg.norm(self.vector) == 0:
                 out_val = self.value * self.value_scale + other
                 return UnitsVector(self.vector, out_val / self.value_scale, self.value_scale)
+            elif other == 0:
+                return self
             else:
                 raise Exception("UnitsVector addition error: cannot add something with Units to a number ({})".format(self.__units__()))
         else:
@@ -72,6 +80,8 @@ class UnitsVector:
 
     def __sub__(self, other):
         if isinstance(other, UnitsVector):
+            if isinstance(other, Doppelganger):
+                return self
             if np.equal(self.vector, other.vector).all():
                 abs_value = self.value * self.value_scale - other.value * other.value_scale
                 relative_val = abs_value / self.value_scale
@@ -249,6 +259,35 @@ class UnitsVector:
     def __one__(self):
         return UnitsVector(self.vector, 1.0, self.value_scale)
 
+class Doppelganger(UnitsVector):
+    def __init__(self):
+        super().__init__(np.zeros(7), 0.0, 1)
+
+    def __add__(self, other):
+        return other
+
+    def __radd__(self, other):
+        return other
+
+    def __sub__(self, other):
+        return -other
+
+    def __rsub__(self, other):
+        return other
+
+    def __mul__(self, other):
+        return other
+
+    def __rmul__(self, other):
+        return other
+
+    def __truediv__(self, other):
+        return 1 / other
+
+    def __rtruediv__(self, other):
+        return other
+
+
 
 class MKS(UnitsVector):
     def __init__(self, value, s, m, kg, A, k, mol, cd):
@@ -349,6 +388,10 @@ class Kelvin(MKS):
     def __init__(self, k):
         super().__init__(k, 0, 0, 0, 0, 1, 0, 0)
 
+class Rankine(Kelvin):
+    def __init__(self, r):
+        super().__init__(r * 5 / 9)
+
 class Celsius(Kelvin):
     def __init__(self, c):
         super().__init__(c + 273.15)
@@ -425,6 +468,18 @@ class NewtonsPerMeter(MKS):
     def __init__(self, f):
         super().__init__(f, -2, 0, 1, 0, 0, 0, 0)
 
+class Pascals(MKS):
+    def __init__(self, p):
+        super().__init__(p, -2, -1, 1, 0, 0, 0, 0)
+
+class Megapascals(Pascals):
+    def __init__(self, p):
+        super().__init__(p * 1e6)
+
+class PSI(Pascals):
+    def __init__(self, p):
+        super().__init__(p * 6894.757293168)
+
 class PoundsForce(Newtons):
     def __init__(self, f):
         super().__init__(f * 4.4482216152605)
@@ -437,6 +492,9 @@ def poundsForce(x):
         else:
             raise Exception("UnitsVector error: cannot convert disimilar units")
 
+class Kips(PoundsForce):
+    def __init__(self, f):
+        super().__init__(f * 1000.0)
 
 class MetersPerSecond(MKS):
     def __init__(self, v):
@@ -538,6 +596,10 @@ class Watts(MKS):
 class Joules(MKS):
     def __init__(self, e):
         super().__init__(e, -2, 2, 1, 0, 0, 0, 0)
+
+class BTU(Joules):
+    def __init__(self, e):
+        super().__init__(e * 1055.05585262)
 
 class ElectronVolts(Joules):
     def __init__(self, e):
